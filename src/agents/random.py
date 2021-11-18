@@ -33,7 +33,7 @@ class Random(BaseAlgorithm):
 
 
     @classmethod
-    def load(cls, env, *args, **kwargs):
+    def load(cls, save_loc, env, *args, **kwargs):
         return cls(env=env, *args, **kwargs)
         
     

@@ -5,6 +5,7 @@ from stable_baselines3 import PPO
 from utils import merge_dict
 from callbacks import LoggerCallback, SaveModelCallback
 from agents.random import Random
+from manifests.common import get_random_agent
 
 
 def get_trial_manifest(noise):
@@ -18,26 +19,9 @@ def get_trial_manifest(noise):
     return trial
 
 
-def get_random_agent():
-    random_spec = {
-        "trial_name": "Random",
-        "model_class": Random,
-        "model_args": {},
-        "bridge_args": {
-            "n_envs": 1
-        },
-        "learn": {
-            "total_timesteps": 0,
-            "callback_fns": []
-        }
-    }
-
-    return random_spec
-
-
 def get_manifest():
     base_manifest = {
-        "exp_name": "test",
+        "exp_name": "test2",
         "env_class": rwrl.load,
         "env_args": {
             "domain_name": "walker",
@@ -53,7 +37,7 @@ def get_manifest():
         },
         "n_seeds": 3,
         "learn": {
-            "total_timesteps": 1000 * 1, #0000 * 0,
+            "total_timesteps": 1000 * 10000 * 0,
             "callback_fns": [
                 {
                     "callback": LoggerCallback,
@@ -72,13 +56,13 @@ def get_manifest():
 
     noise_levels = [0,0.2,0.4,0.6,0.8,1]
     # noise_levels = [0]
-    # noise_levels = []
+    noise_levels = []
 
     manifest = [
         merge_dict(base_manifest, get_trial_manifest(noise)) for noise in noise_levels
     ]
     
-    # manifest.append(merge_dict(base_manifest, get_random_agent()))
+    manifest.append(merge_dict(base_manifest, get_random_agent()))
 
     return manifest
 

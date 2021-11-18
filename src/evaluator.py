@@ -49,9 +49,9 @@ class Evaluator():
         self.env.close()
         
         
-    def evaluate(self, *args, **kwargs):
-        # self._eval_render(*args, **kwargs)
-        # self._eval_reward(*args, **kwargs)
+    def evaluate(self, render=True, rewards=True, tensorboard=True, *args, **kwargs):
+        self._eval_render(*args, **kwargs)
+        self._eval_reward(*args, **kwargs)
         self._collate_tensorboard(*args, **kwargs)
 
     
@@ -117,8 +117,9 @@ class Evaluator():
 
     
     def _collate_tensorboard(self):
-        all_per_key = get_all_per_key(f"{self.exp_dir}/logs")
-        write_summary(all_per_key, f"{self.exp_dir}/logs")
+        if os.path.exists(f"{self.exp_dir}/logs/trial_0/_0"):
+            all_per_key = get_all_per_key(f"{self.exp_dir}/logs")
+            write_summary(all_per_key, f"{self.exp_dir}/logs")
 
 
 def get_all_per_key(logdir): 

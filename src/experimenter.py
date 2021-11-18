@@ -1,15 +1,24 @@
 import os
 import json
 import argparse
+import importlib
+# from src.manifests.action_noise_walker_stand import get_manifest
 
-from manifest import get_manifest
+# from manifest import get_manifest
 from trainer import Trainer 
 from evaluator import Evaluator
 
 
 class Experimenter():
-    def __init__(self, get_manifest):
-        self.manifest = get_manifest()
+    def __init__(self, manifest_loc):
+        if not os.path.exists(manifest_loc):
+            raise ImportError(f"Unable to import from: `{manifest_loc}` ")
+
+        spec = importlib.util.spec_from_file_location(manifest_loc, manifest_loc)
+        manifest_module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(manifest_module)
+
+        self.manifest = manifest_module.get_manifest()
 
 
     def train(self):
@@ -80,11 +89,12 @@ class Experimenter():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+    parser.add_argument("--manifest", required=True, help="The location of the manifest to experiment")
     parser.add_argument('--mode', type=str, default="train", choices=["train", "eval", "collect"], help='Determines if the model is trained or evaulated')
     parser.add_argument("--model_loc", type=str, default=None, help="Location of backup model to load")
     args = parser.parse_args()
 
-    experimenter = Experimenter(get_manifest)
+    experimenter = Experimenter(args.manifest)
 
     if args.mode =="train":
         experimenter.train()
