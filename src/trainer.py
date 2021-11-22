@@ -1,6 +1,7 @@
 import os
 import json
 import copy
+from pickle import load
 
 import numpy as np
 import imageio
@@ -11,13 +12,15 @@ from utils import clear_line, make_vec_env, make_exp_dirs, clear_exp_dirs, load_
 from callbacks import SaveBestModelStep
 
 class Trainer():
-    def __init__(self, exp_dir, env_class, env_args, model_class, model_args, bridge_args={}, trial_no=0, force_new=False, *args, **kwargs):
+    def __init__(self, exp_dir, env_class, env_args, model_class, model_args, bridge_args={}, trial_no=0, training_mode="collect", *args, **kwargs):
+        assert training_mode in ("extend", "collect", "re-train")
+
         self.exp_dir = exp_dir
         self.env_class = env_class
         self.env_args = env_args
         self.bridge_args = bridge_args
         self.trial_no = trial_no
-
+        self.loaded = False
 
         trial_data = {
             "env_class": env_class,
@@ -27,37 +30,52 @@ class Trainer():
             "bridge_args": bridge_args,
         }
         
-        loaded=False
-
-        if os.path.exists(self.exp_dir) and False:
-
-            # TODO: extend
-            # TODO: expand
-            # TODO: re-train
-            
-            if force_new:
-                clear_exp_dirs(self.exp_dir)
-            else:
-                existing_trial_data = load_pkl_file(f"{self.exp_dir}/trial_man.pkl")
-
-                if existing_trial_data != trial_data:
-                    raise Exception("New trial manifest does not match existing one.")
-                
-                loaded = True
-        else: 
-            make_exp_dirs(self.exp_dir, self.trial_no)
+        make_exp_dirs(self.exp_dir, trial_no=self.trial_no)
         
-        save_pkl_file(trial_data, f"{self.exp_dir}/trial_man.pkl")
+        if not os.path.exists(f"{self.exp_dir}/trial_man.pkl"):
+            save_pkl_file(trial_data, f"{self.exp_dir}/trial_man.pkl")
+            training_mode = "collect"
+
+        if training_mode == "re-train":
+            # TODO: Need to restrucute as this will delete every trial each time it's called. 
+            raise Exception("Not implemented yet.")
+            clear_exp_dirs(self.exp_dir)
+            make_exp_dirs(self.exp_dir)
+            save_pkl_file(trial_data, f"{self.exp_dir}/trial_man.pkl")
+
+        else:
+            existing_trial_data = load_pkl_file(f"{self.exp_dir}/trial_man.pkl")
+
+            if existing_trial_data != trial_data:
+                raise Exception("New trial manifest does not match existing one.")
+        
+
+            if training_mode == "collect":
+                try:
+                    seed_info = load_pkl_file(f"{self.exp_dir}/seed_info.pkl")
+                    self.trial_no = seed_info["total_trials"] + 1
+                    seed_info["total_trials"] = self.trial_no
+                    make_exp_dirs(self.exp_dir, trial_no=self.trial_no)
+
+                
+                except:
+                    seed_info = {
+                        "total_trials": 0
+                    }
+                
+                save_pkl_file(seed_info, f"{self.exp_dir}/seed_info.pkl")
+                    
+                pass
+            elif training_mode == "extend":
+                self.loaded = True
 
         self.env = make_vec_env(env_class=env_class, env_args=env_args, exp_dir=exp_dir, **bridge_args)
         self.model_class = model_class
 
-
-        if loaded:
-            self.load(model_loc="final_model.zip")
+        if self.loaded:
+            self.model = self.model_class.load(path=f"{self.exp_dir}/ckpt/trial_{trial_no}/final_model.zip", env=self.env)
         else:
             self.model = self.model_class(env=self.env, tensorboard_log=f"{exp_dir}/logs/trial_{self.trial_no}", **model_args)
-
 
 
     def load(self, model_loc=None):
@@ -88,7 +106,6 @@ class Trainer():
 
             callbacks.append(callback_fn(trainer=self, **callback_args))
         
-
         self.model.learn(total_timesteps=total_timesteps, callback=callbacks, tb_log_name="", reset_num_timesteps=False)
                 
         with open(f"{self.exp_dir}/ckpt/best.json", "w+") as f:
@@ -99,6 +116,7 @@ class Trainer():
             }
 
             json.dump(best_score_info, f, indent=4)
+
 
     def close(self):
         self.env.close()
