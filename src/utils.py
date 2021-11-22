@@ -75,8 +75,15 @@ def save_pkl_file(data, file):
 
 
 def load_pkl_file(file):
-    with open(file, "rb") as f:
-        data = pickle.load(f)
+    data = None
+    try:
+        with open(file, "rb") as f:
+            data = pickle.load(f)
+
+    except FileNotFoundError:
+        with open(file, "wb") as f:
+            pass
+
     return data
 
 def clear_line():
