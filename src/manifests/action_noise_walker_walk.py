@@ -20,12 +20,12 @@ def get_trial_manifest(noise):
 
 def get_manifest():
     base_manifest = {
-        "exp_name": "action_noise_walker_stand",
+        "exp_name": "action_noise_walker_walk",
         "training_mode": "collect",
         "env_class": rwrl.load,
         "env_args": {
             "domain_name": "walker",
-            "task_name": "realworld_stand",
+            "task_name": "realworld_walk",
             "environment_kwargs": dict(log_safety_vars=False, flat_observation=True),
         },
         "bridge_args": {
@@ -37,7 +37,7 @@ def get_manifest():
         },
         "n_seeds": 3,
         "learn": {
-            "total_timesteps": 1000 * 10000,
+            "total_timesteps": 1000 * 15000,
             "callback_fns": [
                 {
                     "callback": LoggerCallback,
