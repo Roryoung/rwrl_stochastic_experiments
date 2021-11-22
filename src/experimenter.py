@@ -2,11 +2,10 @@ import os
 import json
 import argparse
 import importlib
-# from src.manifests.action_noise_walker_stand import get_manifest
 
-# from manifest import get_manifest
 from trainer import Trainer 
 from evaluator import Evaluator
+from utils import load_pkl_file
 
 
 class Experimenter():
@@ -24,8 +23,19 @@ class Experimenter():
     def train(self):
         for trial in self.manifest:
             exp_dir = f"results/{trial['exp_name']}/{trial['trial_name']}"
+
+            if not os.path.exists(f"{exp_dir}/seed_info.pkl"):
+                trial["training_mode"] = "collect"
+
+
+            if trial["training_mode"] == "extend":
+                seed_info = load_pkl_file(f"{exp_dir}/seed_info.pkl")
+                n_seeds = seed_info["total_trials"] + 1
+            else:
+                n_seeds = trial["n_seeds"]
+
             
-            for i in range(trial["n_seeds"]):
+            for i in range(n_seeds):
                 print(f"{trial['exp_name']} | {trial['trial_name']} | trial={i}")
 
                 trainer = Trainer(exp_dir=exp_dir, trial_no=i, **trial)
@@ -42,26 +52,34 @@ class Experimenter():
         for trial in self.manifest:
             exp_dir = f"results/{trial['exp_name']}/{trial['trial_name']}"
 
-            # for i in range(trial["n_seeds"]):
-            #     print(f"{trial['exp_name']} | {trial['trial_name']} | trial={i}")
-                
-            #     if os.path.exists(exp_dir):
-            #         try:
-            #             trainer = Trainer(exp_dir=exp_dir, **trial)
-                        
-            #             if model_loc is not None:
-            #                 trainer.load(model_loc)
+            if os.path.exists(f"{exp_dir}/seed_info.pkl"):
+                seed_info = load_pkl_file(f"{exp_dir}/seed_info.pkl")
+                n_seeds = seed_info["total_trials"] + 1
 
-            #             trainer.evaluate(**trial["eval"])
-            #             trainer.close()
-            #         except Exception as e:
-            #             print(e)
-            #     else:
-            #         print("There is no training data for this trial.")
-            
-            evaluator = Evaluator(exp_dir=exp_dir, **trial)
-            evaluator.evaluate()
-            evaluator.close()
+                trial["training_mode"] = "extend"
+
+                for i in range(n_seeds):
+                    print(f"{trial['exp_name']} | {trial['trial_name']} | trial={i}")
+                    
+                    if os.path.exists(exp_dir):
+                        try:
+                            trainer = Trainer(exp_dir=exp_dir, **trial)
+                            
+                            if model_loc is not None:
+                                trainer.load(model_loc)
+                            else:
+                                trainer.load(f"trial_{i}/final_model.zip")
+
+                            trainer.evaluate(**trial["eval"])
+                            trainer.close()
+                        except Exception as e:
+                            print(e)
+                    else:
+                        print("There is no training data for this trial.")
+                
+                evaluator = Evaluator(exp_dir=exp_dir, **trial)
+                evaluator.evaluate()
+                evaluator.close()
 
     
     def collect_results(self):
