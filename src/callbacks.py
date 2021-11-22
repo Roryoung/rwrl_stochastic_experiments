@@ -14,9 +14,8 @@ class SaveBestModelStep(BaseCallback):
         self.best_step = 0
 
     def _on_step(self) -> bool:
-        self.best_step = self.num_timesteps
+        self.best_step = self.parent.n_calls
         return super()._on_step()
-
 
 
 class LoggerCallback(BaseCallback):
@@ -24,7 +23,7 @@ class LoggerCallback(BaseCallback):
         super(LoggerCallback, self).__init__(verbose)
     
     def _on_step(self) -> bool:
-        print(f"\r{self.num_timesteps }", end="")
+        print(f"\r{self.n_calls }", end="")
         return super()._on_step()
 
     def _on_training_end(self) -> None:
@@ -38,8 +37,8 @@ class SaveModelCallback(BaseCallback):
         self.backup_frequency = backup_frequency  
 
     def _on_step(self) -> bool:
-        if (self.num_timesteps  - 1) % self.backup_frequency == 0:
-            save_name = (self.num_timesteps -1) if self.num_timesteps  < 1001 else f"{int((self.num_timesteps  - 1)/1000)}k"
+        if (self.n_calls  - 1) % self.backup_frequency == 0:
+            save_name = (self.n_calls -1) if self.n_calls  < 1001 else f"{int((self.n_calls  - 1)/1000)}k"
 
             self.model.save(f"{self.trainer.exp_dir}/ckpt/trial_{self.trainer.trial_no}/backup/{save_name}")
             self.model.save(f"{self.trainer.exp_dir}/ckpt/trial_{self.trainer.trial_no}/final_model")
@@ -75,11 +74,11 @@ class SampleTrajectoryCallback(BaseCallback):
         if self.sample_frequency is not None:
             self.model.env.env_method("render_colors", reward=self.reward_color, constraints=self.constraints_color)
             self.model.env.env_method("render_angles", render_camera_ids=self.render_camera_ids)
-            if self.num_timesteps  % self.sample_frequency < self.sample_steps:
+            if self.n_calls  % self.sample_frequency < self.sample_steps:
                 img = self.model.env.render(mode="rgb_array")
                 self.images.append(np.array(img))
-            elif self.num_timesteps  % self.sample_frequency == self.sample_steps:
-                name = str(self.num_timesteps ) if self.num_timesteps  < 1000 else f"{str(int(self.num_timesteps /1000))}k" 
+            elif self.n_calls  % self.sample_frequency == self.sample_steps:
+                name = str(self.n_calls ) if self.n_calls  < 1000 else f"{str(int(self.n_calls /1000))}k" 
                 imageio.mimsave(f"{self.model.exp_dir}/samples/{name}.gif", self.images, fps=50)
 
                 self.images = []
