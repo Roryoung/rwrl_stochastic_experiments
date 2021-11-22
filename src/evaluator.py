@@ -84,7 +84,7 @@ class Evaluator():
         clear_line()
 
 
-    def _eval_reward(self, n_runs=3, *args, **kwargs):
+    def _eval_reward(self, n_runs=10, *args, **kwargs):
         print(f"\rEval reward", end="")
 
         trial_dirs = next(os.walk(f"{self.exp_dir}/ckpt"))[1]
