@@ -20,12 +20,12 @@ def get_trial_manifest(noise):
 
 def get_manifest():
     base_manifest = {
-        "exp_name": "action_noise_cartpole_swingup",
+        "exp_name": "gaussian_action_noise/cartpole_balance",
         "training_mode": "collect",
         "env_class": rwrl.load,
         "env_args": {
             "domain_name": "cartpole",
-            "task_name": "realworld_swingup",
+            "task_name": "realworld_balance",
             "environment_kwargs": dict(log_safety_vars=False, flat_observation=True),
         },
         "bridge_args": {
@@ -35,9 +35,9 @@ def get_manifest():
         "model_args": {
             "policy": "MlpPolicy"
         },
-        "n_seeds": 5,
+        "n_seeds": 3,
         "learn": {
-            "total_timesteps": 1000 * 1500,
+            "total_timesteps": 1000 * 1000,
             "callback_fns": [
                 {
                     "callback": LoggerCallback,

@@ -20,7 +20,7 @@ def get_trial_manifest(noise):
 
 def get_manifest():
     base_manifest = {
-        "exp_name": "action_noise_walker_stand",
+        "exp_name": "gaussian_action_noise/walker_stand",
         "training_mode": "collect",
         "env_class": rwrl.load,
         "env_args": {

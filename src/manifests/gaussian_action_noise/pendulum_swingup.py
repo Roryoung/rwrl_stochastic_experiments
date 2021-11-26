@@ -24,7 +24,7 @@ def get_trial_manifest(noise):
 
 def get_manifest():
     base_manifest = {
-        "exp_name": "action_noise_pedulum_swingup",
+        "exp_name": "gaussian_action_noise/pedulum_swingup",
         "training_mode": "extend",
         "env_class": rwrl.load,
         "env_args": {
