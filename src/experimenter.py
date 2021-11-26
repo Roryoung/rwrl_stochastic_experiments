@@ -40,7 +40,7 @@ class Experimenter():
 
                 trainer = Trainer(exp_dir=exp_dir, trial_no=i, **trial)
                 trainer.learn(**trial["learn"])
-                trainer.evaluate(**trial["eval"])
+                trainer.evaluate(**trial["eval_seed"])
                 trainer.close()
 
             evaluator = Evaluator(exp_dir=exp_dir, **trial)
@@ -62,23 +62,20 @@ class Experimenter():
                     print(f"{trial['exp_name']} | {trial['trial_name']} | trial={i}")
                     
                     if os.path.exists(exp_dir):
-                        try:
-                            trainer = Trainer(exp_dir=exp_dir, **trial)
-                            
-                            if model_loc is not None:
-                                trainer.load(model_loc)
-                            else:
-                                trainer.load(f"trial_{i}/final_model.zip")
+                        trainer = Trainer(exp_dir=exp_dir, trial_no=i, **trial)
+                        
+                        if model_loc is not None:
+                            trainer.load(model_loc)
+                        else:
+                            trainer.load(f"trial_{i}/final_model.zip")
 
-                            trainer.evaluate(**trial["eval"])
-                            trainer.close()
-                        except Exception as e:
-                            print(e)
+                        trainer.evaluate(**trial["eval_seed"])
+                        trainer.close()
                     else:
                         print("There is no training data for this trial.")
                 
                 evaluator = Evaluator(exp_dir=exp_dir, **trial)
-                evaluator.evaluate()
+                # evaluator.evaluate()
                 evaluator.close()
 
     
