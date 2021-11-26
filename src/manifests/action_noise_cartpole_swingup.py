@@ -35,9 +35,9 @@ def get_manifest():
         "model_args": {
             "policy": "MlpPolicy"
         },
-        "n_seeds": 3,
+        "n_seeds": 5,
         "learn": {
-            "total_timesteps": 1000 * 1000,
+            "total_timesteps": 1000 * 1500,
             "callback_fns": [
                 {
                     "callback": LoggerCallback,
@@ -51,7 +51,8 @@ def get_manifest():
                 }
             ]
         },
-        "eval": {}
+        "eval_seed": {},
+        "eval_trial": {}
     }
 
     noise_levels = [0,0.2,0.4,0.6,0.8,1]

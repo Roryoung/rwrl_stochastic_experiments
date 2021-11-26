@@ -122,9 +122,12 @@ class Trainer():
         self.env.close()
 
 
-    def evaluate(self, *args, **kwargs):
+    def evaluate(self, eval_functions=[], *args, **kwargs):
         self._eval_render(*args, **kwargs)
         self._eval_reward(*args, **kwargs)
+
+        for function in eval_functions:
+            function(self, *args, **kwargs)
 
     
     def _eval_render(self, n_steps=1000, reward_color=True, constraints_color=True, render_camera_ids=[0,1], *args, **kwargs):
