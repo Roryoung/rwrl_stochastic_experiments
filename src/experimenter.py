@@ -22,11 +22,13 @@ class Experimenter():
 
     def train(self):
         for trial in self.manifest:
-            exp_dir = f"results/{trial['exp_name']}/{trial['trial_name']}"
+            exp_dir = f"results/{trial['exp_name']}/{trial['trial_name']}/{trial['model_name']}"
 
             if not os.path.exists(f"{exp_dir}/seed_info.pkl"):
                 trial["training_mode"] = "collect"
-
+            else:
+                if trial["training_mode"] == "skip_existing":
+                    continue
 
             if trial["training_mode"] == "extend":
                 seed_info = load_pkl_file(f"{exp_dir}/seed_info.pkl")
@@ -36,7 +38,7 @@ class Experimenter():
 
             
             for i in range(n_seeds):
-                print(f"{trial['exp_name']} | {trial['trial_name']} | trial={i}")
+                print(f"{trial['exp_name']} | {trial['trial_name']} | {trial['model_name']} | trial={i}")
 
                 trainer = Trainer(exp_dir=exp_dir, trial_no=i, **trial)
                 trainer.learn(**trial["learn"])
@@ -50,7 +52,7 @@ class Experimenter():
 
     def evaluate(self, model_loc=None):
         for trial in self.manifest:
-            exp_dir = f"results/{trial['exp_name']}/{trial['trial_name']}"
+            exp_dir = f"results/{trial['exp_name']}/{trial['trial_name']}/{trial['model_name']}"
 
             if os.path.exists(f"{exp_dir}/seed_info.pkl"):
                 seed_info = load_pkl_file(f"{exp_dir}/seed_info.pkl")
@@ -83,10 +85,13 @@ class Experimenter():
         all_results = {}
         
         for trial in self.manifest:
-            exp_dir = f"results/{trial['exp_name']}/{trial['trial_name']}"
+            exp_dir = f"results/{trial['exp_name']}/{trial['trial_name']}/{trial['model_name']}"
+
+            if trial['trial_name'] not in all_results:
+                all_results[trial['trial_name']] = {}
 
             if not os.path.exists(f"{exp_dir}/evaluation/summary/metrics.json"):
-                all_results[trial["trial_name"]] = None
+                all_results[trial['trial_name']][trial["model_name"]] = None
             else:
                 with open(f"{exp_dir}/evaluation/summary/metrics.json", "r") as f:
                     try:
@@ -94,8 +99,8 @@ class Experimenter():
                     except:
                         saved_metrics = None
 
-                    all_results[trial["trial_name"]] = saved_metrics
-
+                    all_results[trial['trial_name']][trial["model_name"]] = saved_metrics
+            
 
         with open(f"results/{trial['exp_name']}/metrics.json", "w+") as f:
             json.dump(all_results, f, indent=4)

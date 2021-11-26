@@ -12,13 +12,18 @@ from utils import clear_line, make_vec_env, make_exp_dirs, clear_exp_dirs, load_
 from callbacks import SaveBestModelStep
 
 class Trainer():
-    def __init__(self, exp_dir, env_class, env_args, model_class, model_args, bridge_args={}, trial_no=0, training_mode="collect", *args, **kwargs):
+    def __init__(self, exp_dir, env_class, env_args, model_name, model_class, model_args, bridge_args={}, trial_no=0, training_mode="collect", *args, **kwargs):
         assert training_mode in ("extend", "collect", "re-train")
 
         self.exp_dir = exp_dir
         self.env_class = env_class
         self.env_args = env_args
         self.bridge_args = bridge_args
+
+        self.model_name = model_name
+        self.model_class = model_class
+        self.model_args = model_args
+
         self.trial_no = trial_no
         self.loaded = False
 
@@ -70,7 +75,6 @@ class Trainer():
                 self.loaded = True
 
         self.env = make_vec_env(env_class=env_class, env_args=env_args, exp_dir=exp_dir, **bridge_args)
-        self.model_class = model_class
 
         if self.loaded:
             self.model = self.model_class.load(path=f"{self.exp_dir}/ckpt/trial_{trial_no}/final_model.zip", env=self.env)

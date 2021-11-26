@@ -13,11 +13,15 @@ from utils import clear_line, make_vec_env, load_pkl_file
 
 
 class Evaluator():
-    def __init__(self, exp_dir, env_class, env_args, model_class, model_args, bridge_args={}, *args, **kwargs):
+    def __init__(self, exp_dir, env_class, env_args, model_name, model_class, model_args, bridge_args={}, *args, **kwargs):
         self.exp_dir = exp_dir
         self.env_class = env_class
         self.env_args = env_args
         self.bridge_args = bridge_args
+
+        self.model_name = model_name
+        self.model_class = model_class
+        self.model_args = model_args
 
         trial_data = {
             "env_class": env_class,
@@ -38,7 +42,6 @@ class Evaluator():
             raise Exception("No trials to evaulate.")
         
         self.env = make_vec_env(env_class=env_class, env_args=env_args, exp_dir=exp_dir, **bridge_args)
-        self.model_class = model_class
 
 
     def load(self, model_loc=None):
