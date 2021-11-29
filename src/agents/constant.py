@@ -1,8 +1,11 @@
+import pickle
+
 import torch
 
 from stable_baselines3.common.base_class import BaseAlgorithm
 from stable_baselines3.common.policies import BasePolicy
 
+from utils import save_pkl_file, load_pkl_file
 
 class Constant_policy(BasePolicy):
     def __init__(self, policy_type, action_space, *args, squash_output: bool = False, **kwargs):
@@ -34,13 +37,16 @@ class Constant(BaseAlgorithm):
         pass
 
 
-    def save(self, *args, **kwargs):
-        pass
+    def save(self, path, *args, **kwargs):
+        save_pkl_file(self.policy_type, path)
+        
 
 
     @classmethod
     def load(cls, path, env, *args, **kwargs):
-        return cls(env=env, *args, **kwargs)
+        policy_type = load_pkl_file(path)
+    
+        return cls(env=env, policy_type=policy_type, *args, **kwargs)
         
     
     def _setup_model(self) -> None:
