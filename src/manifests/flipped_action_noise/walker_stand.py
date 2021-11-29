@@ -68,7 +68,7 @@ def get_agent_manifests():
 
 
 def get_manifest():
-    noise_levels = [i/5 for i in range(6)]
+    noise_levels = [i/10 for i in range(6)]
     # noise_levels = [0]
     # noise_levels = []
 
