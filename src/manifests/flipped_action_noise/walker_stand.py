@@ -8,7 +8,7 @@ from manifests.common import get_all_consistent_agents, get_random_agent, get_pp
 
 def get_trial_manifest(noise):
     trial = {
-        "trial_name": "range=" + str(noise).replace(".", ","),
+        "trial_name": "flip_prob=" + str(noise).replace(".", ","),
         "env_args": {
             "noise_spec" : dict(flipped=dict(enable=bool(True*noise), action_prob=noise))
         }
