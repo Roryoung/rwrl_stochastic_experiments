@@ -28,6 +28,7 @@ class Experimenter():
                 trial["training_mode"] = "collect"
             else:
                 if trial["training_mode"] == "skip_existing":
+                    print(f"Skippig {trial['exp_name']} | {trial['trial_name']} | {trial['model_name']}")
                     continue
 
             if trial["training_mode"] == "extend":
