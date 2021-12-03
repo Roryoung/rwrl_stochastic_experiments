@@ -86,6 +86,9 @@ def load_pkl_file(file):
 
     return data
 
+def print_line(string):
+    print(f"\r{string}", end="")
+
 def clear_line():
     print("\r" + " "*80, end="")
     print("\r", end="")
