@@ -1,43 +1,31 @@
 
 import realworldrl_suite.environments as rwrl
-from stable_baselines3 import PPO
 
 from utils import merge_dict
 from callbacks import LoggerCallback, SaveModelCallback
-from manifests.common import get_random_agent
+from manifests.common import get_all_consistent_agents, get_random_agent, get_ppo_agent, merge_manifest_and_agent
 
-
-def get_trial_manifest(noise):
-    trial = {
-        "trial_name": "action_noise=" + str(noise).replace(".", ","),
-        "env_args": {
-            "noise_spec" : dict(gaussian=dict(enable=bool(True*noise), observations=0, actions=noise))
-        }
-    }
-    
-    return trial
-
-
-def get_manifest():
+def get_base_manifest():
     base_manifest = {
         "exp_name": "test",
-        "training_mode": "collect",
+        "trial_name": "test",
+        "training_mode": "skip_existing",
+        
+        # Environment args
         "env_class": rwrl.load,
         "env_args": {
-            "domain_name": "cartpole",
-            "task_name": "realworld_balance",
+            "domain_name": "walker",
+            "task_name": "realworld_stand",
             "environment_kwargs": dict(log_safety_vars=False, flat_observation=True),
         },
         "bridge_args": {
-            "n_envs": 8
+            "n_envs": 1
         },
-        "model_class": PPO,
-        "model_args": {
-            "policy": "MlpPolicy"
-        },
-        "n_seeds": 3,
+
+        # Training args
+        "n_seeds": 1,
         "learn": {
-            "total_timesteps": 1000 * 100,
+            "total_timesteps": 1000 * 1,
             "callback_fns": [
                 {
                     "callback": LoggerCallback,
@@ -46,23 +34,38 @@ def get_manifest():
                 {
                     "callback": SaveModelCallback,
                     "args": {
-                        "backup_frequency": 1000 * 10
+                        "backup_frequency": 1000 * 500
                     }
                 }
             ]
         },
-        "eval": {}
+
+        # Evaluation args
+        "eval_seed": {},
+        "eval_trial": {}
     }
 
-    noise_levels = [0,0.2,0.4,0.6,0.8,1]
-    # noise_levels = [0]
+    return base_manifest
+
+
+def get_agent_manifests():
+    all_agents = []
+    # all_agents.append(get_ppo_agent())
+    all_agents.append(get_random_agent())
+    # all_agents += get_all_consistent_agents()
+
+    return all_agents
+
+
+def get_manifest():
+    # noise_levels = [i/5 for i in range(6)]
+    noise_levels = [0]
     # noise_levels = []
 
-    manifest = [
-        merge_dict(base_manifest, get_trial_manifest(noise)) for noise in noise_levels
-    ]
-    
-    manifest.append(merge_dict(base_manifest, get_random_agent()))
+    # Get trail manifests
+    manifest = [get_base_manifest()]
 
+    manifest = merge_manifest_and_agent(manifest, get_agent_manifests())
+    
     return manifest
 
