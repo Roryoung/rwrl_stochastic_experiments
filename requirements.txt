@@ -1,7 +1,7 @@
-stable_baselines3==1.3.0
-torch==1.10.0
-imageio==2.10.1
-nunpy==1.21.3
-tensorboard==2.7.0
+stable-baselines3
+torch
+imageio
+# nunpy
+tensorboard
 git+git://github.com/Roryoung/realworldrl_suite
 git+git://github.com/Roryoung/dmc_to_gym
