@@ -29,7 +29,7 @@ def get_base_manifest():
             "environment_kwargs": dict(log_safety_vars=False, flat_observation=True),
         },
         "bridge_args": {
-            "n_envs": 4
+            "n_envs": 8
         },
 
         # Training args
@@ -68,7 +68,7 @@ def get_agent_manifests():
 
 
 def get_manifest():
-    noise_levels = [i/5 for i in range(6)]
+    noise_levels = [i/10 for i in range(6)]
     # noise_levels = [1]
     # noise_levels = []
 
