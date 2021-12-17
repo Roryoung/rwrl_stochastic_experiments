@@ -1,7 +1,5 @@
 import numpy as np
 import imageio
-import os
-import json
 
 from stable_baselines3.common.callbacks import BaseCallback
 
@@ -47,8 +45,32 @@ class SaveModelCallback(BaseCallback):
 
     def _on_training_end(self) -> None:
         self.model.save(f"{self.trainer.exp_dir}/ckpt/trial_{self.trainer.trial_no}/final_model")
-       
 
+
+class RecoredVisistedState(BaseCallback):
+    def __init__(self, trainer, verbose=0, *args, **kwargs):
+        super(RecoredVisistedState, self).__init__(verbose=verbose)
+        self.visited_states = []
+        self.trainer = trainer
+
+
+    def _on_rollout_end(self) -> None:
+        observations = self.model.rollout_buffer.observations
+        self.visited_states.append(observations)
+        return super()._on_rollout_end()
+
+    def _on_step(self) -> bool:
+        return super()._on_step()
+
+    def _on_training_end(self) -> None:
+        self.visited_states = np.concatenate(self.visited_states, axis=0)
+        self.visited_states = self.visited_states.reshape(self.visited_states.shape[0], -1)
+
+        with open(f"{self.trainer.exp_dir}/ckpt/trial_{self.trainer.trial_no}/visited_states.npy", "wb") as f:
+            np.save(f, self.visited_states)
+
+        return super()._on_training_end()
+        
 
 
 class SampleTrajectoryCallback(BaseCallback):
