@@ -9,7 +9,7 @@ from stable_baselines3.common.evaluation import evaluate_policy
 from tensorboard.backend.event_processing.event_accumulator import EventAccumulator
 from torch.utils.tensorboard import SummaryWriter
 
-from utils import clear_line, make_vec_env, load_pkl_file
+from utils import clear_line, make_vec_env, load_pkl_file, print_line
 
 
 class Evaluator():
@@ -55,6 +55,7 @@ class Evaluator():
     def evaluate(self, render=True, rewards=True, tensorboard=True, *args, **kwargs):
         self._eval_render(*args, **kwargs)
         self._eval_reward(*args, **kwargs)
+        # self._eval_state_dist(*args, **kwargs)
         self._collate_tensorboard(*args, **kwargs)
 
     
@@ -113,6 +114,31 @@ class Evaluator():
             saved_metrics["std_reward"] = std_reward
             saved_metrics["n_runs"] = n_runs
             saved_metrics["n_trials"] = len(trial_dirs)
+
+            json.dump(saved_metrics, f, indent=4)
+
+        clear_line()
+
+    def _eval_state_dist(self, *args, **kwargs):
+        print_line("Eval State Distribution")
+        trial_dirs = next(os.walk(f"{self.exp_dir}/ckpt"))[1]
+        
+        all_stds = []
+
+        for trial in trial_dirs:
+            if os.path.exists(f"{self.exp_dir}/ckpt/{trial}/visited_states.npy"):
+                with open(f"{self.exp_dir}/ckpt/{trial}/visited_states.npy", "rb") as f:
+                    visited_states = np.load(f)
+
+                all_stds.append(float(np.std(visited_states)))
+
+        with open(f"{self.exp_dir}/evaluation/summary/metrics.json", "w+") as f:
+            try:
+                saved_metrics = json.load(f)
+            except:
+                saved_metrics = {}
+
+            saved_metrics["trial_stds"] = all_stds
 
             json.dump(saved_metrics, f, indent=4)
 
