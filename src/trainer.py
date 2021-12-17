@@ -8,7 +8,7 @@ import imageio
 from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.callbacks import EvalCallback
 
-from utils import clear_line, make_vec_env, make_exp_dirs, clear_exp_dirs, load_pkl_file, save_pkl_file
+from utils import clear_line, make_vec_env, make_exp_dirs, clear_exp_dirs, load_pkl_file, print_line, save_pkl_file
 from callbacks import SaveBestModelStep
 
 class Trainer():
@@ -129,6 +129,7 @@ class Trainer():
     def evaluate(self, eval_functions=[], *args, **kwargs):
         self._eval_render(*args, **kwargs)
         self._eval_reward(*args, **kwargs)
+        # self._eval_state_dist(*args, **kwargs)
 
         for function in eval_functions:
             function(self, *args, **kwargs)
@@ -174,6 +175,26 @@ class Trainer():
             saved_metrics["std_reward"] = std_reward
 
             json.dump(saved_metrics, f, indent=4)
+
+        clear_line()
+
+    
+    def _eval_state_dist(self, *args, **kwargs):
+        print_line("Eval State Distribution")
+
+        if os.path.exists(f"{self.exp_dir}/ckpt/trial_{self.trial_no}/visited_states.npy"):
+            with open(f"{self.exp_dir}/ckpt/trial_{self.trial_no}/visited_states.npy", "rb") as f:
+                visited_states = np.load(f)
+
+            with open(f"{self.exp_dir}/evaluation/trial_{self.trial_no}/metrics.json", "w+") as f:
+                try:
+                    saved_metrics = json.load(f)
+                except:
+                    saved_metrics = {}
+
+                saved_metrics["state_std"] = float(np.std(visited_states))
+
+                json.dump(saved_metrics, f, indent=4)
 
         clear_line()
 
