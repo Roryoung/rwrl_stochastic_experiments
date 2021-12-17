@@ -78,7 +78,7 @@ class Experimenter():
                         print("There is no training data for this trial.")
                 
                 evaluator = Evaluator(exp_dir=exp_dir, **trial)
-                # evaluator.evaluate()
+                evaluator.evaluate()
                 evaluator.close()
 
     
